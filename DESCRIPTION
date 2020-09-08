@@ -1,6 +1,6 @@
 Package: neonstore
 Title: NEON Data Store
-Version: 0.2.1
+Version: 0.2.2
 Authors@R: c(person(
               "Carl", "Boettiger", 
               email = "cboettig@gmail.com", 
@@ -22,15 +22,15 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports: httr, jsonlite, rappdirs, progress, vroom, utils, curl,
-        openssl, tibble, stats, zip, digest
+        openssl, tibble, stats, zip, digest, R.utils, tools
 RoxygenNote: 7.1.1
 Suggests: testthat, covr, xml2, spelling
 Language: en-US
 NeedsCompilation: no
-Packaged: 2020-08-28 22:32:07 UTC; cboettig
+Packaged: 2020-09-07 20:28:34 UTC; cboettig
 Author: Carl Boettiger [aut, cre] (<https://orcid.org/0000-0002-1642-628X>),
   Quinn Thomas [ctb],
   Christine Laney [aut] (<https://orcid.org/0000-0002-4944-2083>)
 Maintainer: Carl Boettiger <cboettig@gmail.com>
 Repository: CRAN
-Date/Publication: 2020-08-29 04:50:03 UTC
+Date/Publication: 2020-09-08 04:50:02 UTC

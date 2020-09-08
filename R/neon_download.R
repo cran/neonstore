@@ -51,9 +51,8 @@
 #' @param quiet Should download progress be displayed?
 #' @param verify Should downloaded files be compared against the MD5 hash
 #' reported by the NEON API to verify integrity? (default `TRUE`)
-#' @param unzip should we extract .zip files?  Also removes the .zip files.
-#'  (default `TRUE`).  Set to FALSE if you want to keep `.zip` archives and
-#'  manually unzip them later.
+#' @param unzip should we extract .zip files? (default `TRUE`). Note: .zip
+#' files are preserved in the store to avoid repeated downloads. 
 #' @param dir Location where files should be downloaded. By default will
 #' use the appropriate applications directory for your system 
 #' (see [rappdirs::user_data_dir]).  This default also be configured by
@@ -69,6 +68,8 @@
 #'
 #' @export
 #' @importFrom curl curl_download
+#' @importFrom R.utils gunzip
+#' @importFrom tools file_path_sans_ext
 #' @examples 
 #' \donttest{
 #'  
@@ -108,7 +109,7 @@ neon_download <- function(product,
                      site = site,  
                      api = api, 
                      .token = .token)
-
+  
   ## additional filters on already_have, type and file_regex:
   files <- download_filters(files, file_regex, type, quiet, dir)
   if(is.null(files)) return(invisible(NULL)) # nothing to download
@@ -118,8 +119,9 @@ neon_download <- function(product,
   
   algo <- hash_type(files)
   verify_hash(files$path, files[algo], verify, algo)
-  if(unzip) unzip_all(files$path, dir)
   
+  if(unzip) unzip_all(files$path, dir)
+
   ## file metadata (url, path, md5sum)  
   invisible(files)
 }
@@ -131,7 +133,7 @@ download_filters <- function(files, file_regex,
                              type, quiet, dir){
   
   if(is.null(files)) return(invisible(NULL)) # nothing to download
-
+  
   ## Omit those files we already have
   files <- files[!(files$name %in% list.files(dir)), ]
   
@@ -143,7 +145,8 @@ download_filters <- function(files, file_regex,
   
   ## Filter to have only expanded or basic (not both)
   ## Note: this may not make sense if product is a vector!
-  if(!any(grepl("expanded", files))){
+  
+  if(type == "expanded" & !any(grepl("expanded", files))){
     type <- "basic"
     if(!quiet) message("no expanded product, using basic product")
   }
@@ -180,19 +183,26 @@ download_all <- function(addr, dest, quiet){
       curl::curl_download(addr[i], dest[i]),
       error = function(e) 
         warning(paste(e$message, "on", addr[i]),
-             call. = FALSE),
+                call. = FALSE),
       finally = NULL
     )
   }  
 }
 
-unzip_all <- function(path, dir, keep_zips = FALSE){
+unzip_all <- function(path, dir, keep_zips = TRUE){
   zips <- path[grepl("[.]zip", path)]
   lapply(zips, zip::unzip, exdir = dir)
-  if(!keep_zips) unlink(zips)
+  if(!keep_zips) {
+    unlink(zips)
+  }
+  path <- list.files(path = dir, full.names = TRUE)
+  filename <- path[grepl("[.]gz", path)]
+  if(length(filename) > 0){
+    destname <- tools::file_path_sans_ext(filename)
+    mapply(R.utils::gunzip, filename, destname,remove = TRUE)
+  }
+  
 }
-
-
 
 #' @importFrom digest digest
 #' @importFrom openssl md5
@@ -217,6 +227,8 @@ verify_hash <- function(path, hash, verify, algo = "md5"){
     }
   }
 }
+
+
 
 
 
