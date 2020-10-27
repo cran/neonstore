@@ -1,7 +1,7 @@
-9cfc4538a36126c457bf32709b813bbc *DESCRIPTION
+c9cbd1a42e5f42005e604c7dcd2f8417 *DESCRIPTION
 365ba699194b55db5c011186d3491df0 *LICENSE
 d7893c9c5d64e8de6602de3b3004e6ab *NAMESPACE
-77535dd64ef7450988c7e029b4d9bc94 *NEWS.md
+51a23eed6008771dc348e954b99da58a *NEWS.md
 7e196e10791bafb9ea34b9db0b32a561 *R/connection_pane.R
 d6df4f7cf21049722ec98379fe740c0e *R/neon_citation.R
 a5c6bc2fd346ba0ff2e50297249d1a07 *R/neon_data.R
@@ -13,9 +13,10 @@ d6452c839da8527b55f7ff777949b3d2 *R/neon_db.R
 0be9e828f0a628947c1b753c073e77ed *R/neon_filename_parser.R
 c4da55e99a9faa00954209672e7fa400 *R/neon_index.R
 02073d36cf610ec3a7eaf5bfe42772bf *R/neon_products.R
-a463064caaa2a40b9eba78d16d03a6e9 *R/neon_read.R
+571fdaa120df3dd54c316a974de3eff9 *R/neon_read.R
 605450d020cdb473bbfbdc650cf0bd2f *R/neon_sites.R
-93427286f6a478ca480c1c5cfece1d68 *R/neon_store.R
+202e28c9b32956968b717e067a5bfd85 *R/neon_stack.R
+f7996fe30e6fba2a1ed1e9e670fb278e *R/neon_store.R
 c827ecc08d78e751da6d7dbfd805ffa4 *R/neon_table.R
 954673d3d951438aa243b4a5455c9102 *R/stack_eddy.R
 f2a0938578031865222ef1fbe1db0d84 *R/utilities.R
@@ -52,4 +53,4 @@ a16aad7683ac0aec6d6f6f459a49f9e2 *tests/testthat/test-api.R
 40565d4873b52a8e1ddecc63129d8d40 *tests/testthat/test-eddy.R
 b3bd7d839914b5f5826f6b6ea9afe650 *tests/testthat/test-index.R
 2887c6896b0eadd161b6ebe5b3d3bdc3 *tests/testthat/test-read.R
-aebedd6b525e90dc0dfecb46ddf1c1cd *tests/testthat/test-utils.R
+f8a7f862bdbd992af314c100544e3cf3 *tests/testthat/test-utils.R
