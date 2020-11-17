@@ -4,7 +4,7 @@
 \alias{neon_table}
 \title{Return a neon table from the database}
 \usage{
-neon_table(table, site = NA, con = neon_db())
+neon_table(table, site = NA, db = neon_db())
 }
 \arguments{
 \item{table}{the name of a downloaded NEON table in the store,
@@ -12,7 +12,7 @@ see \link{neon_index}}
 
 \item{site}{4-letter site code(s) to filter on. Leave as \code{NA} to search all.}
 
-\item{con}{a connection to the neon database}
+\item{db}{a connection to the database, see \verb{[neon_db()]}.}
 }
 \description{
 Return a neon table from the database

@@ -1,8 +1,7 @@
 #' Return a neon table from the database
 #'
 #' @inheritParams neon_read
-#' @param con a connection to the neon database
-#' 
+#' @param db a connection to the database, see `[neon_db()]`.
 #' @details
 #' We cannot filter on start_date or end_date since these
 #' come only from the filename metadata and are only added
@@ -13,8 +12,9 @@
 #' 
 neon_table <- function(table,
                        site = NA,
-                       con = neon_db()){
-  
+                       db = neon_db()){
+
+  con <- db
   tables <- DBI::dbListTables(con)
   table <- check_tablename(table, tables)
   

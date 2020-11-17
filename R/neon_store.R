@@ -2,9 +2,10 @@
 #' 
 #' @param n number of files that should be read per iteration
 #' @param quiet show progress?
+#' @param db_dir location of the database directory
 #' @inheritParams neon_index
 #' @inheritDotParams neon_read
-#' @return the connection object (invisibly)
+#' @return the index of files read in (invisibly)
 #' @importFrom DBI dbWriteTable dbSendQuery dbGetQuery
 #' @export
 #' 
@@ -12,17 +13,18 @@ neon_store <- function(table = NA,
                        product = NA,
                        type = NA,
                        dir = neon_dir(),
+                       db_dir = neon_db_dir(),
                        n = 500L,
-                       quiet = FALSE, 
+                       quiet = FALSE,
                        ...)
 {
   
+  ## Determine which files will be imported:
   index <- neon_index(table = table,
                       product = product,
                       type = type,
                       dir = dir,
                       deprecated = FALSE)
-  
   ## only h5 or csv data can be imported currently
   index <- index[index$ext == "h5" | index$ext == "csv",]
   
@@ -39,40 +41,45 @@ neon_store <- function(table = NA,
   }
   
   ## standardize table name
-  
   tables <- stackable_tables(index$table)
-  con <- neon_db(dir)
+
   
+  ## Establish a write-able database connection
+  con <- neon_db(db_dir, read_only = FALSE)
   
   ## Omit already imported files
   index <- omit_imported(con, index)
   if(nrow(index) == 0){
     message("all files have been imported")
+    neon_disconnect(db = con)
     return(invisible(con))
   }
   
-  lapply(tables, 
-         function(table){
-  
+  for (table in tables) {
     ## Drop rows from the database which come from deprecated files
     drop_deprecated(table, dir, con)
-    index <- index[index$table == table, ]
-    
-    if(nrow(index) > 0)
-    db_chunks(con = con, 
-              files = index$path,
-              table = table, 
-              n = n, 
-              quiet = quiet, 
-              ...)
-  })
+    meta <- index[index$table == table, ]
+    if(nrow(meta) > 0){
+      con <- db_chunks(con = con, 
+                       files = meta$path,
+                       table = table, 
+                       n = n, 
+                       quiet = quiet, 
+                       ...)
+    }
+  }
+  
   ## update the provenance table
+  con <- duckdb_memory_manager(con)
   if(!is.null(index)){
     DBI::dbWriteTable(con, "provenance", index, append = TRUE)
   }
-  
-  invisible(con)
+  neon_disconnect(db = con)
+  invisible(index)
 }
+
+
+
 
 stackable_tables <- function(tables){
   tables <- unique(tables)
@@ -90,7 +97,9 @@ db_chunks <- function(con,
                       quiet = FALSE,
                       ...){
   
-  if(length(files)==0) return(NULL)
+  if(length(files)==0){ 
+    return(con)
+  }
   
   total <- length(files) %/% n
   if(length(files) %% n > 0)  ## and the remainder
@@ -100,6 +109,7 @@ db_chunks <- function(con,
   progress <- !quiet
   ## all files in one go
   if(total == 1){
+    if (!quiet) message(paste0("  importing ", table, "..."))
     df <- neon_stack(files = files,
                      keep_filename = TRUE,
                      sensor_metadata = TRUE,
@@ -109,13 +119,16 @@ db_chunks <- function(con,
     if(!is.null(df)){
       DBI::dbWriteTable(con, table, df, append = TRUE)
     }
+    
+    con <- duckdb_memory_manager(con)
     return(invisible(con))
   }
   
-  if(total > 4){
+  if (total > 4) {
     progress <- FALSE
   }
-  ## Otherwise do chunks
+  
+  ## Otherwise do in chunks
   pb <- progress::progress_bar$new(
     format = paste("  importing", table,
                    "[:bar] :percent in :elapsed, eta: :eta"),
@@ -123,11 +136,11 @@ db_chunks <- function(con,
     clear = FALSE, 
     show_after = 0,
     width = 80)
-  
-  if(!quiet && progress) 
+
+  if (!quiet && progress) 
     message(paste("  processing", table, "files in", total, "chunks:"))
-  for(i in 0:(total-1)){
-    if(!quiet && progress) 
+  for (i in 0:(total-1)){
+    if (!quiet && progress) 
       message(paste0("  chunk ", i+1, ":"), appendLF=FALSE)
     if(!quiet && !progress) pb$tick()
     chunk <- na_omit(files[ (i*n+1):((i+1)*n) ])
@@ -137,11 +150,27 @@ db_chunks <- function(con,
                      altrep = FALSE,
                      progress = progress)
     DBI::dbWriteTable(con, table, df, append = TRUE)  
+    con <- duckdb_memory_manager(con)
+
   }
+  
+  con <- duckdb_memory_manager(con)
   return(invisible(con))
   
 }
 
+
+duckdb_memory_manager <- function(con){
+  if(Sys.getenv("duckdb_restart", FALSE)){
+    # shouldn't be necessary when memory management improves in duckdb...
+    dir <- dirname(con@driver@dbdir)
+    ## power cycle to force import
+    db <- neon_db(dir, read_only = FALSE)
+    DBI::dbDisconnect(db, shutdown = TRUE)
+    con <- neon_db(dir, read_only = FALSE)
+  }
+  con
+}
 
 #' @importFrom DBI dbWriteTable dbListTables dbGetQuery
 omit_imported <- function(con, index){
@@ -169,7 +198,7 @@ omit_imported <- function(con, index){
 
 drop_deprecated <- function(table, 
                             dir = neon_dir(),
-                            con = neon_db(dir)){
+                            con = neon_db()){
   
   if( !(table %in% DBI::dbListTables(con)) ){
     return(invisible(NULL))
