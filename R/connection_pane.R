@@ -34,7 +34,7 @@ neon_pane <- function() {
       },
       listColumns = function(table) {
         res <- DBI::dbGetQuery(neon_db(),
-                               paste("SELECT * FROM", table, "LIMIT 1"))
+                               paste0("SELECT * FROM \"", table, "\" LIMIT 10"))
         data.frame(
           name = names(res), 
           type = vapply(res, function(x) class(x)[1], character(1)),
@@ -43,7 +43,7 @@ neon_pane <- function() {
       },
       previewObject = function(rowLimit, table) {  #nolint
         DBI::dbGetQuery(neon_db(),
-                        paste("SELECT * FROM", table, "LIMIT", rowLimit))
+                        paste0("SELECT * FROM \"", table, "\" LIMIT ", rowLimit))
       },
       actions = list(
         Status = list(
@@ -92,13 +92,14 @@ neon_db_status <- function () {
 }
 
 
-
-.onAttach <- function(libname, pkgname) {  #nolint
-  if (interactive() && Sys.getenv("RSTUDIO") == "1"  && !in_chk()) {
-    tryCatch({neon_pane()}, error = function(e) NULL, finally = NULL)
-  }
-  if (interactive()) neon_db_status()
-}
+## Do not open the pane onAttach, wait for user to call neon_pane()
+#.onAttach <- function(libname, pkgname) {  #nolint
+#  if (interactive() && Sys.getenv("RSTUDIO") == "1"  && !in_chk()) {
+#    tryCatch({neon_pane()}, error = function(e) NULL, finally = NULL)
+#  }
+#  if (interactive()) 
+#    tryCatch(neon_db_status(),  error = function(e) NULL, finally = NULL)
+#}
 
 
 in_chk <- function() {

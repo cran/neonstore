@@ -27,9 +27,6 @@
 #' 
 #' @seealso  [neon_download()]
 #' 
-#' @param product Include only files matching this NEON productCode(s)
-#' @param table Include only files matching this table name (or regex pattern). 
-#' (optional).
 #' @param ext only match files with this file extension(s)
 #' @param timestamp only match timestamps prior this. See details in [neon_index()].
 #'        Should be a datetime POSIXct object (or coerce-able string)
@@ -66,11 +63,14 @@ neon_index <- function(product = NA,
                        type = NA,
                        ext = NA,
                        timestamp = NA,
+                       release = NA,
                        hash = NULL,
                        dir = neon_dir(),
                        deprecated = TRUE){
   
   files <- list.files(dir, recursive = TRUE, full.names = TRUE)
+  
+ 
   
   ## Turn file names into a metadata table
   meta <- filename_parser(files)
@@ -81,7 +81,9 @@ neon_index <- function(product = NA,
   
   if(is.null(meta)) return(NULL)
   
-  
+  ## Add release information
+  meta <- add_release(meta, dir = dir)
+
   ## Apply filters
   meta <- meta_filter(meta, 
                       product = product,
@@ -91,7 +93,8 @@ neon_index <- function(product = NA,
                       end_date = end_date,
                       type = type,
                       timestamp = timestamp,
-                      ext = ext)
+                      ext = ext,
+                      release = release)
   
   ## Compute hashes, if requested
   meta$hash <- file_hash(meta$path, hash = hash)
@@ -111,7 +114,8 @@ meta_filter <- function(meta,
                         end_date = NA, 
                         type = NA,
                         timestamp = NA,
-                        ext = NA){
+                        ext = NA,
+                        release = NA){
   
   ## Arguably, filtering could be done on file names
   ## rather than table of parsed file names?
@@ -129,7 +133,7 @@ meta_filter <- function(meta,
   
   if(!is.na(start_date)){
     start_date <- as.Date(start_date)
-    month <- as.Date(paste0(meta$month, "-01"))
+    month <- year_month(meta$month)
     keep <- month >= start_date
     ## don't filter out tables without a month:
     keep[is.na(keep)] <- TRUE
@@ -138,7 +142,7 @@ meta_filter <- function(meta,
   
   if(!is.na(end_date)){
     end_date <- as.Date(end_date)
-    month <- as.Date(paste0(meta$month, "-01"))
+    month <- year_month(meta$month)
     keep <- month <= end_date
     ## don't filter out tables without a month:
     keep[is.na(keep)] <- TRUE
@@ -164,21 +168,28 @@ meta_filter <- function(meta,
     meta <- meta[!is.na(meta$path), ]
   }
   
+  if(!is.na(release)){
+    meta <- meta[meta$release %in% release,]
+  }
+  
   tibble::as_tibble(meta)
   
 }
 
+year_month <- function(x){
+  
+  ym <- function(x){
+    if(is.na(x)) return(as.Date(NA))
+    as.Date(paste0(x, "-01"))
+  }
+  vapply(x, ym, as.Date("2020-01-01"))
+  
+}
+
+
 na_omit <- function(x) x[!is.na(x)]
 
-na_to_char <- function(x, char = ""){
-  x <- as.character(x)
-  x[is.na(x)] <- char
-  x
-}
 
-paste_na <- function(..., sep = "."){
-  do.call("paste", c(lapply(list(...), na_to_char), list(sep = sep)))
-}
 
 
 filename_parser <- function(files){
@@ -190,7 +201,7 @@ filename_parser <- function(files){
   
   ## We may want more columns than this than this.  
   out <- df[c("SITE", "DESC", "PKGTYPE", "EXT","YYYY_MM",  "GENTIME", 
-              "HOR", "VER", "TMI",  "name")]
+              "HOR", "VER", "TMI", "DATE_RANGE", "name")]
   out$product <- paste_na(df$DPL, df$PRNUM, df$REV)
   
   ## append 'type' to table name
@@ -198,32 +209,39 @@ filename_parser <- function(files){
   out$DESC[i] <- paste_na(out$DESC[i], out$PKGTYPE[i], sep = "-")
   
   ## Apply names used originally -- FIXME maybe stick with NEON terms?
-  names(out) <- c("site", "table", "type", "ext",
-                  "month", "timestamp", 
+  names(out) <- c("site", "table", "type", "ext", "month", "timestamp", 
                   "horizontalPosition", "verticalPosition", "samplingInterval",
-                  "path", "product")
+                  "date_range", "path", "product")
   
   ## re-order
   out <- out[, c("product", "site", "table", "type",
                  "ext", "month", "timestamp",
                  "horizontalPosition", "verticalPosition", "samplingInterval",
-                 "path")]
+                 "date_range", "path")]
   
   ## cast timestamp as POSIXct
   out$timestamp <- as.POSIXct(out$timestamp, format = "%Y%m%dT%H%M%OS")
   
+  ## enforce types on possibly-missing columns
+  out$horizontalPosition <- as.numeric(out$horizontalPosition)
+  out$verticalPosition <- as.numeric(out$verticalPosition)
+  out$samplingInterval <- as.character(out$samplingInterval)
+  out$site <- as.character(out$site)
+  out$table <- as.character(out$table)
+  out$type <- as.character(out$type)
+  out$month <- as.character(out$month)
   
   out
 }
 
 
-#' @importFrom openssl md5 sha1 sha256
+# openssl md5 sha1 sha256
 file_hash <- function(x, hash = "md5"){
   
   
   if(is.null(hash)) return(NULL)
   if(length(x) == 0)  return(NULL)
-  
+  requireNamespace("openssl", quietly = TRUE)
   hash_fn <- switch(hash, 
                     "md5" = openssl::md5,
                     "sha1" = openssl::sha1,
@@ -239,7 +257,11 @@ file_hash <- function(x, hash = "md5"){
   ## httr imports openssl already
   hashes <- paste0("hash://", hash, "/",
                    vapply(x, 
-                          function(y) as.character(hash_fn(file(y))),
+                          function(y) {
+                            con <- file(y, "rb")
+                            on.exit(close(con), add = TRUE)
+                            as.character(hash_fn(con))
+                          },
                           character(1L)))
   
   hashes
@@ -250,25 +272,27 @@ file_hash <- function(x, hash = "md5"){
 
 
 ## Sometimes a NEON file will have changed
-filter_deprecated <- function(meta){
-
+flag_deprecated <- function(meta){
   ## Sort by most recent timestamp
   meta <- meta[order(meta$timestamp, decreasing = TRUE),] 
-  
-  ## de-duplicate.  always takes first match(?)
-  key_cols <- c("product", "site", "month", "table", 
-    "verticalPosition", "horizontalPosition")
+  ## base-R de-duplicate on key-columns.  always takes first match (most recent)
+  key_cols <- c("product", "site", "month", "table", "type", 
+                "verticalPosition", "horizontalPosition", "date_range")
   deprecated <- duplicated(meta[key_cols])
-  out <- meta[!deprecated,]
-  
-  if(any(deprecated))
-    message(paste("Some raw files were detected with updated timestamps.\n",
-                  "Using only most updated file to avoid duplicates."))
-  ## FIXME Maybe we should verify if the hash of said file(s) has changed.
-  ## maybe we should provide more information on how to check these?
-  
+  meta$deprecated <- deprecated
+  meta
+}
+filter_deprecated <- function(meta){
+  meta <- flag_deprecated(meta)
+  ## We don't care if metadata is updated, since those are not stacking data.
+  ## We might care if a data file has actually been changed 
+  changed_data <- meta$deprecated & !is.na(meta$month)
+  if(any(changed_data)){
+    message(paste0("  Some raw data files have changed.\n",
+                   "  Using only most updated file to avoid duplicates.\n",
+                   "  see ?neonstore::show_deprecated_data() for details."))
+  }
+  out <- meta[!meta$deprecated,]
+  out$deprecated <- NULL # drop flag after filtering
   out
 }
-
-
-

@@ -7,14 +7,14 @@
 neon_citation(product = NULL, download_date = Sys.Date(), dir = neon_dir())
 }
 \arguments{
-\item{product}{A NEON \code{productCode}. See \link{neon_download}.}
+\item{product}{A NEON \code{productCode} or list of product codes, see examples.}
 
 \item{download_date}{Date of download to be included in citation.
 default is today's date, see details.}
 
 \item{dir}{Location where files should be downloaded. By default will
 use the appropriate applications directory for your system
-(see \link[rappdirs:user_data_dir]{rappdirs::user_data_dir}).  This default also be configured by
+(see \code{\link[tools:userdir]{tools::R_user_dir()}}).  This default also be configured by
 setting the environmental variable \code{NEONSTORE_HOME}, see \link{Sys.setenv} or
 \link{Renviron}.}
 }

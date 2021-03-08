@@ -3,10 +3,26 @@
 
 #' Download requested NEON files from an S3 bucket 
 #' 
+#' It is possible to copy the local neonstore (see `[neon_dir()]`) to
+#' an S3 bucket for faster shared access to a large store.  This function
+#' mimics the behavior of `[neon_download()]` but accesses files directly
+#' from such an S3 bucket.
 #' Queries the AWS-S3 REST endpoint GET bucket for a file list
 #' in (in 1000-file chunks), then filters file names to determine
-#' what to download. This should be much faster than the NEON API and
-#' avoids rate-limiting.
+#' what to download. Users must set the `api` to the address of their S3
+#' bucket to take advantage of this feature.  For demonstration purposes,
+#' an example S3 bucket is provided as the default.  Note that data 
+#' obtained in this way is only as up-to-date or complete as the underlying
+#' cache.  Users should always draw from the NEON API using `[neon_download()]`
+#' to ensure they have the most recent and complete data files.  
+#' 
+#' Note: at this time, release information associated with files in the store
+#' is not available from neonstore S3 caches. As such, this mechanism is not
+#' able to filter data for specific RELEASE tags, is which are only available
+#' from the NEON API.  Querying products by `[neon_download()]` will update
+#' the corresponding release tags.  
+#' 
+#' 
 #' @inheritParams neon_download
 #' @param api URL to an S3 bucket containing raw NEON data files (in
 #' flat file structure like that used by neonstore).
@@ -32,15 +48,17 @@
 #' }
 #' 
 neon_download_s3 <- function(product, 
+                             table =  NA,
+                             site = NA,
                              start_date = NA,
                              end_date = NA,
-                             site = NA,
-                             type = "expanded",
-                             file_regex =  "[.]zip",
+                             type = "basic",
+                             release = NA,
                              quiet = FALSE,
                              verify = TRUE,
-                             dir = neon_dir(), 
-                             unzip = TRUE,
+                             dir = neon_dir(),
+                             get_zip = FALSE,
+                             unzip = FALSE,
   api = "https://minio.thelio.carlboettiger.info/neonstore/"){
   
   if(!quiet) message("querying S3 API...")
@@ -48,10 +66,17 @@ neon_download_s3 <- function(product,
   
   ## These two checks overlap with neon_download() steps
   ## only files matching regex
-  files <- files[grepl(file_regex, files)]
-  
+  if(!is.na(table)){
+    files <- files[grepl(table, files)]
+  }
+  if(get_zip){
+    files <- files[grepl("[.]zip", files)]
+  } else {
+    files <- files[!grepl("[.]zip", files)]
+  }
+    
   ## only files we don't already have in the store
-  already_have <- files %in% basename(list.files(dir, recursive = TRUE))
+  already_have <- basename(files) %in% basename(list.files(dir, recursive = TRUE))
   if(sum(already_have) > 0 && !quiet){
     message(paste("omitting", sum(already_have), "files previously downloaded"))
   }
@@ -66,6 +91,7 @@ neon_download_s3 <- function(product,
   meta <- filename_parser(files)
   meta <- meta_filter(meta, 
                       product = product, 
+                      table = table,
                       site = site, 
                       start_date = start_date, 
                       end_date = end_date,
@@ -81,12 +107,17 @@ neon_download_s3 <- function(product,
   
   ## URL and destination
   addr <- paste0(api, meta$path)
-  dest <- neon_subdir(basename(meta$path), dir)
+  dest <- file.path(dir, meta$path)
+  lapply(dirname(dest), dir.create, FALSE, TRUE)
   
-  download_all(addr, dest, quiet)
-  # verify_hash(dest, files$crc32, verify)
+  # crc32/md5 sums not recorded
+  download_all(addr, dest, quiet = quiet, verify = FALSE)
   if(unzip) unzip_all(dest, dir)
 
+  
+  ## Technically we should hash the files and add them to the 
+  ## registry with the hashes and `UNKNOWN` release tag information
+  
   invisible(meta)
 }
 

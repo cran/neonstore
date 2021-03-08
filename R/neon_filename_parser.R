@@ -82,7 +82,7 @@
 #' 
 #' @export
 neon_filename_parser <- function(x){
-  
+  x <- gsub("\\.gz$", "", x) # no .gz!
   df <- ragged_bind(list(
     os_is_parser(x),
     ec_parser(x),
@@ -91,7 +91,10 @@ neon_filename_parser <- function(x){
     schema() # ensure all columns are present
   ))
   #unique(df)
-  df
+  
+  ## enforce original ordering of vector input
+  i <- match(x, df$name)
+  df[i,]
 }
 
 

@@ -17,6 +17,11 @@
 #' @param read_only allow concurrent connections by enforcing read_only.
 #'   See details. 
 #' @param ... additional arguments to dbConnect
+#' @param memory_limit Set a memory limit for duckdb, in GB.  This can
+#' also be set for the session by using options, e.g. 
+#' `options(duckdb_memory_limit=10)` for a limit of 10GB.  On most systems 
+#' duckdb will automatically set a limit to 80% of machine capacity if not 
+#' set explicitly.  
 #' @importFrom DBI dbConnect
 #' @importFrom duckdb duckdb
 #' @examples 
@@ -24,7 +29,10 @@
 #' # tempfile used for illustration only
 #' neon_db(tempfile())
 #' 
-neon_db <- function (dir = neon_db_dir(), read_only = TRUE,  ...) {
+neon_db <- function (dir = neon_db_dir(), 
+                     read_only = TRUE, 
+                     memory_limit = getOption("duckdb_memory_limit", NA), 
+                     ...) {
 
   if (!dir.exists(dir)){
     dir.create(dir, FALSE, TRUE)
@@ -35,14 +43,15 @@ neon_db <- function (dir = neon_db_dir(), read_only = TRUE,  ...) {
   if (!file.exists(dbname) && read_only) {
     db <- DBI::dbConnect(duckdb::duckdb(), 
                          dbdir = dbname, read_only = FALSE)
-    dbWriteTable(db, "init", data.frame(NEON="NEON"))
-    dbDisconnect(db, shutdown=TRUE)
+    DBI::dbWriteTable(db, "init", data.frame(NEON="NEON"))
+    DBI::dbDisconnect(db, shutdown=TRUE)
   }
 
   db <- mget("neon_db", envir = neonstore_cache, ifnotfound = NA)[[1]]
   if (inherits(db, "DBIConnection")) {
     if (DBI::dbIsValid(db)) {
-      if (read_only) {
+      dir_matches <- db@driver@dbdir == dbname
+      if (read_only & dir_matches) {
         return(db)
       } else {
         ## shut down the cached (read_only) connection first 
@@ -56,6 +65,10 @@ neon_db <- function (dir = neon_db_dir(), read_only = TRUE,  ...) {
                        dbdir = dbname,
                        read_only = read_only,
                        ...)
+  if(!is.na(memory_limit)){
+    pragma <- paste0("PRAGMA memory_limit='", memory_limit, "GB'")
+    DBI::dbExecute(db, pragma)
+  }
 
   if (read_only) {
     assign("neon_db", db, envir = neonstore_cache)
@@ -70,8 +83,6 @@ neon_db <- function (dir = neon_db_dir(), read_only = TRUE,  ...) {
 #' @export
 #' @importFrom DBI dbDisconnect
 neon_disconnect <- function (db = neon_db()) {
-  
-  dir <- dirname(db@driver@dbdir)
   if (inherits(db, "DBIConnection")) {
       DBI::dbDisconnect(db, shutdown = TRUE)
   }
@@ -86,7 +97,8 @@ neonstore_cache <- new.env()
 
 #' delete the local NEON database
 #' 
-#' @param db neon database connection from `[neon_db()]`
+#' @param db_dir neon database location (configurable with the NEONSTORE_DB
+#'  environmental variable)
 #' @param ask Ask for confirmation first?
 #' @details Just a helper function that deletes the NEON database
 #' files, which are found under `file.path(neon_dir(), "database")`.
@@ -105,19 +117,16 @@ neonstore_cache <- new.env()
 #' db <- neon_db(dir)
 #' 
 #' # Delete it
-#' neon_delete_db(db, ask = FALSE)
+#' neon_delete_db(dir, ask = FALSE)
 #' 
 #' 
-neon_delete_db <- function(db = neon_db(), ask = interactive()){
+neon_delete_db <- function(db_dir = neon_db_dir(), ask = interactive()){
   continue <- TRUE
   if(ask){
-    continue <- utils::askYesNo(paste("Delete the local duckdb database?", 
-             "(downloaded files will be kept)"))
+    continue <- utils::askYesNo(paste("Delete local DB in", db_dir, "?"))
   }
   if(continue){
-    dir <- dirname(db@driver@dbdir)
-    DBI::dbDisconnect(db, shutdown = TRUE)
-    db_files <- list.files(dir, "^database.*", full.names = TRUE)
+    db_files <- list.files(db_dir, "^database.*", full.names = TRUE)
     lapply(db_files, unlink, TRUE)
   }
   if (exists("neon_db", envir = neonstore_cache)) {

@@ -6,7 +6,7 @@ test_that("neon_export()/neon_import()", {
   skip_on_cran()
   skip_if_offline()
   skip_on_os("solaris")
-  neondir1 <-  tempfile()
+  neondir1 <-  tempfile("meta1")
   
   x <- neon_download(product = "DP1.10003.001",
                      site = "YELL",
@@ -25,7 +25,7 @@ test_that("neon_export()/neon_import()", {
   expect_is(meta, "data.frame")
   
   ## now restore from archive to new store
-  neondir <-  tempfile()
+  neondir <-  tempfile("meta2")
   
   expect_null( neon_index(dir = neondir) )
   
@@ -33,7 +33,7 @@ test_that("neon_export()/neon_import()", {
   neon_import(archive, dir = neondir)
   meta2 <- neon_index(dir = neondir)
   expect_false(is.null(meta2))
-  expect_equal(basename(meta1$path), basename(meta2$path))
+  expect_equal(sort(basename(meta1$path)), sort(basename(meta2$path)))
   
   ## error handling
   x <- neon_export(product = "not-a-product")
@@ -63,7 +63,7 @@ test_that("filename_parser()", {
   
   meta <- filename_parser(x)
   expect_is(meta, "data.frame")
-  expect_equal(dim(meta), c(7,11))
+  expect_equal(dim(meta), c(7,12))
   
   expect_true(any(grepl("DP1.10003.001", meta$product)))
   expect_true(any(grepl("brd_countdata", meta$table)))
@@ -96,5 +96,23 @@ test_that("na_bool_to_char", {
   type <- vapply(df2, class, "", USE.NAMES = FALSE)
   expect_identical(type, c("integer", "character", "character",
                            "logical", "character"))
+})
+
+
+test_that("unzip_all()", {
+  
+  x <- unzip_all(".", tempdir(), keep_zips = FALSE)
+  expect_true(TRUE)
+})
+
+test_that("verify_hash()", {
+  
+  x <- tempfile()
+  write.csv(mtcars, x, fileEncoding = "UTF-8")
+  expect_warning({ # when hash is wrong
+    verify_hash(x, "b9b8491fb7db639da62a048e414becdb", verify = TRUE)
+  })
+  
+  
 })
 

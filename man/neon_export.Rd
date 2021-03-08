@@ -21,7 +21,7 @@ neon_export(
 \arguments{
 \item{archive}{path to the zip archive to be created.#'}
 
-\item{product}{Include only files matching this NEON productCode(s)}
+\item{product}{A NEON \code{productCode} or list of product codes, see examples.}
 
 \item{table}{Include only files matching this table name (or regex pattern).
 (optional).}
@@ -35,7 +35,7 @@ as \code{NA} to download up to the most recent available data.}
 \code{NA} to download all prior data.}
 
 \item{type}{Should we prefer the basic or expanded version of this product?
-See details.}
+Note that not all products have expanded formats.}
 
 \item{ext}{only match files with this file extension(s)}
 
@@ -48,7 +48,7 @@ to skip hash computation.}
 
 \item{dir}{Location where files should be downloaded. By default will
 use the appropriate applications directory for your system
-(see \link[rappdirs:user_data_dir]{rappdirs::user_data_dir}).  This default also be configured by
+(see \code{\link[tools:userdir]{tools::R_user_dir()}}).  This default also be configured by
 setting the environmental variable \code{NEONSTORE_HOME}, see \link{Sys.setenv} or
 \link{Renviron}.}
 }
