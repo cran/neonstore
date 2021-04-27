@@ -1,7 +1,7 @@
-af7744b69d973a20985578445cc41314 *DESCRIPTION
+b6d1fcdd185392ea4f20f5b9f6f85041 *DESCRIPTION
 365ba699194b55db5c011186d3491df0 *LICENSE
 d6abd7f17991efe45c99164f6a57bf3b *NAMESPACE
-731d471f4cf6e118095a8c1c53d22e0f *NEWS.md
+2056a712ffc112d8e518bf71abecc610 *NEWS.md
 b88fb4f14718d24524a6eea716504517 *R/connection_pane.R
 2de0f35c803fbba3f7866f9b6a167799 *R/neon_citation.R
 ea01c8d7ef2b748652c6aab7545df778 *R/neon_data.R
@@ -10,8 +10,8 @@ a16306e6dfc6d85a533da6b98a00e2c6 *R/neon_dir.R
 40d366f68061240e042fdf9213ff449b *R/neon_download.R
 7c3b759cb07e690ceba4ceb93c997638 *R/neon_download_s3.R
 7bea5db2cee7932e8e8fa6ac706328ab *R/neon_export.R
-4644d24f8cfc9e942e2125080bf8a9d1 *R/neon_filename_parser.R
-dfca1c947ddb9a806ba8dfdbf936aa4d *R/neon_index.R
+23eee38bf46339bf73cead1931ca80b9 *R/neon_filename_parser.R
+a2a1ab14a3188aeb35e6e0d9366159be *R/neon_index.R
 02073d36cf610ec3a7eaf5bfe42772bf *R/neon_products.R
 b0684c57ec5902687c2d2395fb9b0415 *R/neon_read.R
 beb85ae007ac799353c214804812a280 *R/neon_releases.R
@@ -25,8 +25,7 @@ a4581ade429ef65434bc4904e635cd26 *R/utilities.R
 223f11b53d02fe6b70dfdd04bd54541b *README.md
 da6e27b6fce4ec002d74e426834f7416 *inst/WORDLIST
 0dadade63194a76806c67b6d3a305f37 *inst/examples/eddy_db.R
-1291eaa1051007d376938bc578fb1a23 *inst/examples/efi_download.R
-dd0b5e0f71bfd750ce5084ddda75c99b *inst/examples/thelio_mirror.R
+13eceb9337637af07b1eca5734d9628a *inst/examples/thelio_mirror.R
 e6eeb94f7d7eacd07235088ff269efc5 *inst/img/edit-sql.png
 889d0aef251b1a917b928c54709b5bf4 *inst/img/neon.png
 5614907e6ab5f99d4bfdcff653c34ad0 *man/neon_citation.Rd
@@ -58,5 +57,4 @@ f79055afc81e7855e3f42b62b186c8e1 *tests/testthat/test-additional.R
 611dc313916caf2c83491e4018839d4a *tests/testthat/test-eddy.R
 2bc2cfd8ca5aa6d0877ee211f2ec07db *tests/testthat/test-index.R
 69da9f6ce81569afbfa6c144e091f9d9 *tests/testthat/test-read.R
-c554c253791fdede68aa52c36f9927a6 *tests/testthat/test-releases.R
 19a7ac7602bf63a767fdc881fe7a089b *tests/testthat/test-utils.R

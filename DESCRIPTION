@@ -1,6 +1,6 @@
 Package: neonstore
 Title: NEON Data Store
-Version: 0.4.2
+Version: 0.4.3
 Authors@R: c(person(
               "Carl", "Boettiger", 
               email = "cboettig@gmail.com", 
@@ -34,7 +34,7 @@ Suggests: tibble, jsonlite, testthat, covr, xml2, spelling, rstudioapi,
         neonUtilities, rhdf5, curl, openssl, digest
 Language: en-US
 NeedsCompilation: no
-Packaged: 2021-04-08 18:38:26 UTC; cboettig
+Packaged: 2021-04-27 17:45:07 UTC; cboettig
 Author: Carl Boettiger [aut, cre] (<https://orcid.org/0000-0002-1642-628X>),
   Quinn Thomas [aut] (<https://orcid.org/0000-0003-1282-7825>),
   Christine Laney [aut] (<https://orcid.org/0000-0002-4944-2083>),
@@ -42,4 +42,4 @@ Author: Carl Boettiger [aut, cre] (<https://orcid.org/0000-0002-1642-628X>),
   Noam Ross [ctb] (<https://orcid.org/0000-0002-2136-0000>)
 Maintainer: Carl Boettiger <cboettig@gmail.com>
 Repository: CRAN
-Date/Publication: 2021-04-08 19:00:02 UTC
+Date/Publication: 2021-04-27 20:00:02 UTC
