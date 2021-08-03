@@ -1,8 +1,8 @@
-b6d1fcdd185392ea4f20f5b9f6f85041 *DESCRIPTION
+f3a925360054d5c5b001c782b44a3f20 *DESCRIPTION
 365ba699194b55db5c011186d3491df0 *LICENSE
 d6abd7f17991efe45c99164f6a57bf3b *NAMESPACE
-2056a712ffc112d8e518bf71abecc610 *NEWS.md
-b88fb4f14718d24524a6eea716504517 *R/connection_pane.R
+e8f56797d94aba6a71ce520fd5d9d6d6 *NEWS.md
+181717e3d56e6ff195be47731016959d *R/connection_pane.R
 2de0f35c803fbba3f7866f9b6a167799 *R/neon_citation.R
 ea01c8d7ef2b748652c6aab7545df778 *R/neon_data.R
 ded05b1e5fb40203239587a3290c1a64 *R/neon_db.R
@@ -16,7 +16,7 @@ a2a1ab14a3188aeb35e6e0d9366159be *R/neon_index.R
 b0684c57ec5902687c2d2395fb9b0415 *R/neon_read.R
 beb85ae007ac799353c214804812a280 *R/neon_releases.R
 1e2921fdd05c41c9ff33467adaba79ae *R/neon_sites.R
-6f0a0b1820346cc9c09ae051da53f434 *R/neon_stack.R
+7a57bb378b49e73bb2e99a827956a7ce *R/neon_stack.R
 af6acd45dc25d1abbd7f122d910397b8 *R/neon_store.R
 edf8380f199e039990f48ca83a791998 *R/neon_table.R
 6bb1c0fa648a8ffdb57e3a8e7af10056 *R/show_deprecated_data.R
@@ -24,8 +24,10 @@ edf8380f199e039990f48ca83a791998 *R/neon_table.R
 a4581ade429ef65434bc4904e635cd26 *R/utilities.R
 223f11b53d02fe6b70dfdd04bd54541b *README.md
 da6e27b6fce4ec002d74e426834f7416 *inst/WORDLIST
+cc3848a6e924521c9a9ff869ebefc730 *inst/examples/duckdb_parquet.R
 0dadade63194a76806c67b6d3a305f37 *inst/examples/eddy_db.R
-13eceb9337637af07b1eca5734d9628a *inst/examples/thelio_mirror.R
+1291eaa1051007d376938bc578fb1a23 *inst/examples/efi_download.R
+a6ca504f3395ffe7a058622ce89b3c1d *inst/examples/thelio_mirror.R
 e6eeb94f7d7eacd07235088ff269efc5 *inst/img/edit-sql.png
 889d0aef251b1a917b928c54709b5bf4 *inst/img/neon.png
 5614907e6ab5f99d4bfdcff653c34ad0 *man/neon_citation.Rd
@@ -57,4 +59,5 @@ f79055afc81e7855e3f42b62b186c8e1 *tests/testthat/test-additional.R
 611dc313916caf2c83491e4018839d4a *tests/testthat/test-eddy.R
 2bc2cfd8ca5aa6d0877ee211f2ec07db *tests/testthat/test-index.R
 69da9f6ce81569afbfa6c144e091f9d9 *tests/testthat/test-read.R
+c554c253791fdede68aa52c36f9927a6 *tests/testthat/test-releases.R
 19a7ac7602bf63a767fdc881fe7a089b *tests/testthat/test-utils.R
