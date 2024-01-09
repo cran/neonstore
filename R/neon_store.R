@@ -71,7 +71,7 @@ neon_store <- function(table = NA,
     DBI::dbWriteTable(db, "provenance", as.data.frame(index), append = TRUE)
   }
   
-  db <- duckdb_memory_manager(db)
+  #db <- duckdb_memory_manager(db)
   neon_disconnect(db = db)
   invisible(index)
 }
@@ -155,7 +155,7 @@ db_chunks <- function(con,
 
 duckdb_memory_manager <- function(con){
   if(!inherits(con, "duckdb_connection")) return(con)
-  if(Sys.getenv("duckdb_restart", TRUE)){
+  if(Sys.getenv("duckdb_restart", FALSE)){
     message("finalizing duckdb import to disk...")
     ## power cycle to force import
     ## shouldn't be necessary when memory management improves in duckdb...

@@ -41,6 +41,7 @@ neon_db <- function (dir = neon_db_dir(),
 
   ## Cannot open read-only on a database that does not exist
   if (!file.exists(dbname) && read_only) {
+    message("initializing database")
     db <- DBI::dbConnect(duckdb::duckdb(), 
                          dbdir = dbname, read_only = FALSE)
     DBI::dbWriteTable(db, "init", data.frame(NEON="NEON"))
@@ -66,13 +67,15 @@ neon_db <- function (dir = neon_db_dir(),
                        read_only = read_only,
                        ...)
   if(!is.na(memory_limit)){
-    pragma <- paste0("PRAGMA memory_limit='", memory_limit, "GB'")
-    DBI::dbExecute(db, pragma)
+    duckdb_mem_limit(db, memory_limit, "GB")
   }
 
   if (read_only) {
     assign("neon_db", db, envir = neonstore_cache)
   }
+  
+  #e <- globalenv()
+  #reg.finalizer(e, function(e) neon_disconnect(db),TRUE)
   
   db
 }
@@ -83,14 +86,31 @@ neon_db <- function (dir = neon_db_dir(),
 #' @export
 #' @importFrom DBI dbDisconnect
 neon_disconnect <- function (db = neon_db()) {
-  if (inherits(db, "DBIConnection")) {
-      DBI::dbDisconnect(db, shutdown = TRUE)
+  default = getOption("warn")
+  options(warn=-1)
+  
+  if(DBI::dbIsValid(db)) {
+    DBI::dbDisconnect(db, shutdown = TRUE)
   }
+
   if (exists("neon_db", envir = neonstore_cache)) {
     suppressWarnings(
     rm("neon_db", envir = neonstore_cache)
     )
   }
+  
+  gc(FALSE)
+  options(warn=default)
+  invisible(TRUE)
+}
+
+
+silent_gc <- function() {
+  default = getOption("warn")
+  options(warn=-1)
+  gc(FALSE)
+  options(warn=default)
+  invisible(TRUE)
 }
 
 neonstore_cache <- new.env()
@@ -135,5 +155,13 @@ neon_delete_db <- function(db_dir = neon_db_dir(), ask = interactive()){
     )
   }
   return(invisible(continue))
+}
+
+
+duckdb_mem_limit <- function(db = neon_db(), mem_limit = 16, units = "GB"){
+  DBI::dbExecute(db, paste0("PRAGMA memory_limit='", mem_limit, " ", units,"'"))
+}
+duckdb_parallel <- function(duckdb_cores = getOption("mc.cores", 2L)){
+  DBI::dbExecute(neon_db(), paste0("PRAGMA threads=", duckdb_cores))
 }
 

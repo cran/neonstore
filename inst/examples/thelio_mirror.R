@@ -1,7 +1,25 @@
 bench::bench_time({
 
-library(neonstore)
-options(duckdb_memory_limit=10)
+  library(neonstore)
+  message(neon_dir())
+  message(neon_db_dir())
+  
+  
+  mem_limit <- function(db = neon_db(), mem_limit = 16, units = "GB"){
+    DBI::dbExecute(db, paste0("PRAGMA memory_limit='", mem_limit, " ", units,"'"))
+  }
+  
+  enable_parallel <- function(db = neon_db(), duckdb_cores = arrow::cpu_count()){
+    DBI::dbExecute(db, paste0("PRAGMA threads=", arrow::cpu_count()))
+  }
+  
+  db <- neon_db(read_only = FALSE)
+  
+  mem_limit(db)
+  enable_parallel(db)
+  
+  
+# neonstore::neon_delete_db()
 
 tick_sites <- c("BLAN", "ORNL", "SCBI", "SERC", "KONZ", "TALL", "UKFS")
 ter_sites <- c("BART", "KONZ", "SRER", "OSBS")
@@ -27,9 +45,9 @@ neon_download("DP1.20217.001", site =  aq_sites) # Groundwater temperature
 neon_download("DP1.20033.001", site =  aq_sites) # Nitrate in surface water
 
 ## Terrestrial meteorology
-neon_download(product = "DP1.00002.001", site = ter_sites, type = "basic", table = "30") #
+neon_download(product = "DP1.00002.001", site = ter_sites, type = "basic", table = "30") #Temp single aspirated
 neon_download(product = "DP1.00006.001", site = ter_sites, type = "basic", table = "30") #
-neon_download(product = "DP1.00007.001", site = ter_sites, type = "basic") #
+neon_download(product = "DP1.00007.001", site = ter_sites, type = "basic") # Precip, thoughfall
 neon_download(product = "DP1.00023.001", site = ter_sites, type = "basic") #
 neon_download(product = "DP2.00024.001", site = ter_sites, type = "basic") #
 neon_download(product = "DP1.00100.001", site = ter_sites, type = "basic") #
@@ -44,7 +62,7 @@ neon_download("DP1.00098.001", table = "30") # Humidity (includes temp)
 
 ## SQL Import
 neon_store(product = "DP1.10003.001") # Birds
-neon_store(product = "DP1.10022.001") # Beetles
+neon_store(product = "DP1.10022.001", type = "expanded") # Beetles
 neon_store(product = "DP1.10093.001") # Ticks
 
 ## Aquatics SQL Import
@@ -58,10 +76,10 @@ neon_store(product="DP4.00200.001") # hdf5
 # Terrestrial meteorology
 neon_store(product = "DP1.00006.001", table = "THRPRE_30min-basic") # Precip, thoughfall
 neon_store(product = "DP1.00098.001", table = "RH_30min") # Humidity, note two different sensor positions
-neon_store(product = "DP1.00003.001", table= "TAAT_30min") # Temp
-neon_store(product = "DP1.00002.001", table="SAAT_30min-basic")
-neon_store(product = "DP1.00023.001", table = "SLRNR_30min-basic")
-neon_store(product = "DP1.00006.001", table = "SECPRE_30min-basic")
+neon_store(product = "DP1.00003.001", table= "TAAT_30min") # Temp (triple-aspirated)
+neon_store(product = "DP1.00002.001", table="SAAT_30min-basic") #Temp single aspirated
+neon_store(product = "DP1.00023.001", table = "SLRNR_30min-basic") # Short and long wave radiation
+neon_store(product = "DP1.00006.001", table = "SECPRE_30min-basic") # Precipitation secondary
 neon_store(product = "DP1.00100.001") #empty
 
 
@@ -76,15 +94,20 @@ neon_store(product = "DP1.20016.001") # Elevation of surface water
 neon_store(product = "DP1.20217.001") # Groundwater temperature
 neon_store(product = "DP1.20033.001") # Nitrate
 
-# Shared meterology (all sites, slow!)
+# Shared meteorology (all sites, slow!)
 neon_store(product = "DP4.00001.001") # Summary weather
 neon_store("DP1.00003.001", table = "30") # Temp
 neon_store("DP1.00006.001", table = "30") # Precipitation (terrestrial sites)
 neon_store("DP1.00098.001", table = "30") # Humidity (includes temp)
 
 
-})
-## Peak at the readme for a product.  Consider a README fn?  open in viewer?
-# index <- neon_index()
-# index %>% filter(product == "DP1.00003.001", table=="readme") %>% pull(path) %>% getElement(1) %>% usethis::edit_file()
+neon_export_db()
 
+})
+
+s3 <- arrow::s3_bucket("targets/neon", endpoint_override="data.ecoforecast.org")
+neon_sync_db(s3)
+s3$ls() 
+
+## Peak at the readme for a product.  Consider a README fn?  open in viewer?
+# index %>% filter(product == "DP1.00003.001", table=="readme") %>% pull(path) %>% getElement(1) %>% usethis::edit_file()

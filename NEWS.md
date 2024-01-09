@@ -1,3 +1,15 @@
+# v0.5.0
+
+- New function `neon_cloud()` leverages NEON's migration to 
+  Google Cloud Storage (GCS). This function provides direct access
+  to NEON csv data without downloading the data first. 
+
+- `neon_table()` gains the optional argument `lazy`. Set to TRUE to return a 
+  "lazy" table as a dplyr connection directly to the table in `duckdb`.  This
+  is suitable for working with any tables that would be much to large to interact
+  with directly in R. 
+
+
 # v0.4.4
 
 - Use vroom >= 1.5.1 and avoid verbose vroom messages in vroom >= 1.5.0; [#53]

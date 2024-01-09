@@ -1,6 +1,6 @@
 Package: neonstore
 Title: NEON Data Store
-Version: 0.4.4
+Version: 0.5.0
 Authors@R: c(person(
               "Carl", "Boettiger", 
               email = "cboettig@gmail.com", 
@@ -26,14 +26,15 @@ Description: The National Ecological Observatory Network (NEON) provides access
 License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.0.0)
-Imports: DBI, duckdb (>= 0.2.3), httr, progress, R.utils, tools, thor,
-        utils, vroom (>= 1.5.1), zip
-RoxygenNote: 7.1.1
+Imports: DBI, duckdb (>= 0.2.3), httr, progress, R.utils, thor, vroom
+        (>= 1.5.1), zip, duckdbfs, memoise, cachem, glue
+RoxygenNote: 7.2.3
 Suggests: tibble, jsonlite, testthat, covr, xml2, spelling, rstudioapi,
-        neonUtilities, rhdf5, curl, openssl, digest
+        neonUtilities, rhdf5, curl, openssl, digest, arrow, dplyr,
+        R.methodsS3, R.oo, storr
 Language: en-US
 NeedsCompilation: no
-Packaged: 2021-08-03 16:03:27 UTC; cboettig
+Packaged: 2024-01-08 17:39:46 UTC; cboettig
 Author: Carl Boettiger [aut, cre] (<https://orcid.org/0000-0002-1642-628X>),
   Quinn Thomas [aut] (<https://orcid.org/0000-0003-1282-7825>),
   Christine Laney [aut] (<https://orcid.org/0000-0002-4944-2083>),
@@ -41,4 +42,4 @@ Author: Carl Boettiger [aut, cre] (<https://orcid.org/0000-0002-1642-628X>),
   Noam Ross [ctb] (<https://orcid.org/0000-0002-2136-0000>)
 Maintainer: Carl Boettiger <cboettig@gmail.com>
 Repository: CRAN
-Date/Publication: 2021-08-03 16:30:02 UTC
+Date/Publication: 2024-01-09 00:40:08 UTC
