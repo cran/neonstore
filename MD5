@@ -1,7 +1,7 @@
-e1adf2d0d96acadca5d1697e464e94bb *DESCRIPTION
+077879989144cf84b85d87092d8045dd *DESCRIPTION
 365ba699194b55db5c011186d3491df0 *LICENSE
 c5b4a1e0d1ce6399027e62ecbc8960ff *NAMESPACE
-83d6c54f729a892ece6818809e15e98e *NEWS.md
+56ebed0b970653d29eef42dd08ec08bf *NEWS.md
 181717e3d56e6ff195be47731016959d *R/connection_pane.R
 eea937632878ffc4b89b2ead4edf2841 *R/neon_citation.R
 0355a950e5e56616f300220f1ec2a2a6 *R/neon_cloud.R
@@ -26,7 +26,7 @@ beb85ae007ac799353c214804812a280 *R/neon_releases.R
 2377d12cbdb89b18cdb9b0ea58db8045 *R/stack_eddy.R
 a4581ade429ef65434bc4904e635cd26 *R/utilities.R
 d63534a01d4569c4cbd527363125f80e *README.md
-06fbb7650727150775e379c47486026a *inst/WORDLIST
+ecca3521f4c035deb1bacba6a90f382a *inst/WORDLIST
 cc3848a6e924521c9a9ff869ebefc730 *inst/examples/duckdb_parquet.R
 0dadade63194a76806c67b6d3a305f37 *inst/examples/eddy_db.R
 5fcbb051bb9002fdede2547493453d01 *inst/examples/efi_download.R
@@ -67,8 +67,8 @@ ca5b752f96b17f84ca78c7df1fb43e3e *tests/testthat/teardown-tests.R
 8ec3d248e8837f2bf51045e3f9d848db *tests/testthat/test-additional.R
 0a61af9167b0168d82eb9454172147fa *tests/testthat/test-api.R
 155a80abca7a4d1f7f4401a2faeb62e9 *tests/testthat/test-cloud.R
-b532844b159e5f101784cfa263417a97 *tests/testthat/test-db.R
-611dc313916caf2c83491e4018839d4a *tests/testthat/test-eddy.R
+6d9710c7ded9d01193b6a63a36ccf4b0 *tests/testthat/test-db.R
+d653930d606d41bcd6789d3611d3e2e0 *tests/testthat/test-eddy.R
 2bc2cfd8ca5aa6d0877ee211f2ec07db *tests/testthat/test-index.R
 69da9f6ce81569afbfa6c144e091f9d9 *tests/testthat/test-read.R
 19a7ac7602bf63a767fdc881fe7a089b *tests/testthat/test-utils.R
